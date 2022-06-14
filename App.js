@@ -1,53 +1,88 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { BottomSheetView } from '@gorhom/bottom-sheet';
 import {
-  SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
-  ActionSheetIOS,
   useColorScheme,
   View,
+  Text,
 } from 'react-native';
-import CustomSearch from './components/Search';
+import CustomSheet from './components/BottomSheet';
+import DynamicFilter from './components/DynamicFilter';
+import countryData from './data/eea-member-countries.json';
+import CustomBottomTabs from './navigation/CustomBottomTabs';
+import { useAppContextValue } from './context/appContext';
+import { useUser } from '@realm/react';
+import { queryData } from './db/db';
+import SearchScreenStack from './navigation/StackNavigator';
 
 const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const user = useUser();
+  const client = user.mongoClient('mongodb-atlas');
+  const bottomSheetRef = useRef(null);
+  const [{ data, query, searchQuery }, dispatch] = useAppContextValue();
+  const openSheet = index => {
+    bottomSheetRef.current.snapToIndex(index);
+  };
+
+  useEffect(() => {
+    const queryResult = queryData(client, { country: 'Hungary' });
+    queryResult.then(s => {
+      dispatch({
+        type: 'set_query_res',
+        data: s,
+        filteredData: s,
+        searchQuery: s,
+      });
+    });
+  }, []);
 
   return (
-    <SafeAreaView>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <View style={{}}>
-          <CustomSearch
-            // onChangeQuery={onChangeSearch}
-            setSearchQuery={setSearchQuery}
-            searchQuery={searchQuery}
+    <View style={{ flex: 1 }}>
+      <StatusBar barStyle={'dark-content'} />
+      <SearchScreenStack />
+      <CustomSheet ref={bottomSheetRef}>
+        <BottomSheetView style={styles.bottomSheetView}>
+          <DynamicFilter
+            keyName={'country'}
+            dataItems={countryData}
+            multi={false}
+            searchable={true}
+            maxHeight={400}
+            disableLocalSearch={false}
+            styles={{
+              marginBottom: 10,
+            }}
+            containerStyles={{
+              marginBottom: 10,
+              zIndex: 999,
+            }}
           />
-          <Text style={{color: 'white'}}>{searchQuery}</Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          <DynamicFilter
+            keyName={'active_substance'}
+            searchPlaceholder={'Search for substance'}
+            dataItems={[]}
+            multi={true}
+            mode={'BADGE'}
+            disableLocalSearch={true}
+            maxHeight={400}
+            min={1}
+            max={4}
+            searchable={true}
+            styles={{ marginBottom: 10 }}
+            containerStyles={{ marginBottom: 10, zIndex: 1 }}
+          />
+        </BottomSheetView>
+      </CustomSheet>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  bottomSheetView: {
+    flex: 1,
+    alignItems: 'center',
+    flexDirection: 'column',
   },
 });
 

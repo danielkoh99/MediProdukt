@@ -40,7 +40,7 @@ const App = () => {
   return (
     <View style={{ flex: 1 }}>
       <StatusBar barStyle={'dark-content'} />
-      <SearchScreenStack />
+      <SearchScreenStack openSheet={openSheet} />
       <CustomSheet ref={bottomSheetRef}>
         <BottomSheetView style={styles.bottomSheetView}>
           <DynamicFilter
@@ -58,7 +58,7 @@ const App = () => {
               zIndex: 999,
             }}
           />
-          <DynamicFilter
+          {/* <DynamicFilter
             keyName={'active_substance'}
             searchPlaceholder={'Search for substance'}
             dataItems={[]}
@@ -71,7 +71,7 @@ const App = () => {
             searchable={true}
             styles={{ marginBottom: 10 }}
             containerStyles={{ marginBottom: 10, zIndex: 1 }}
-          />
+          /> */}
         </BottomSheetView>
       </CustomSheet>
     </View>

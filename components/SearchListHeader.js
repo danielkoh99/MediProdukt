@@ -11,8 +11,17 @@ const SearchListHeader = () => {
     console.log(searchQuery);
   }, []);
 
-  if (searchQuery !== {} && searchQuery !== null && searchQuery !== undefined) {
+  if (
+    key &&
+    val &&
+    searchQuery &&
+    searchQuery !== {} &&
+    searchQuery !== null &&
+    searchQuery !== undefined
+  ) {
     return <Text style={styles.title}>{key + ' : ' + val}</Text>;
+  } else {
+    return null;
   }
 };
 
